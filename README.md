@@ -81,13 +81,14 @@ The PR is shown as **Blocked** in Infracost Cloud, mirroring the failed GitHub A
 
 ## Pricing
 
-The **Infracost CLI**, **GitHub Action**, and self-hosted use are free and open source (MIT licence). **Infracost Cloud** — the SaaS dashboard, team policies, PR comments at scale, and budget guardrails — is a paid product priced per seat based on unique PR authors per month. See [infracost.io/pricing](https://infracost.io/pricing) for current figures.
+| Tier | Hosted by | What you get | Cost |
+|------|-----------|-------------|------|
+| **CLI + GitHub Action** | Your CI runner | Cost breakdown, diff, PR comments | Free, open source |
+| **Infracost Cloud SaaS** | Infracost (app.infracost.io) | Dashboard, guardrails, FinOps policies, tagging policies, PR governance | Paid, per seat |
+| **Infracost Cloud self-hosted** | You, on your own infrastructure | Same as SaaS but data stays in your environment | Paid, enterprise licence |
+
+Both cloud options are paid regardless of who hosts it — the self-hosted option is not a free alternative. Pricing is per unique PR author per month. See [infracost.io/pricing](https://infracost.io/pricing) for current figures.
+
+![alt text](image-3.png)
 
 ---
-
-## Next steps
-
-- **Enable Infracost Cloud features**: connect the repo in the dashboard to unlock org-wide cost visibility and trend charts.
-- **Add tagging policies**: fail the workflow if resources are missing required tags (e.g. `Owner`, `CostCentre`).
-- **Set budget guardrails**: block merges that exceed a defined cost increase percentage.
-- **Gate PRs on cost thresholds**: use `infracost diff` exit codes in branch protection rules so large cost increases require manual approval.
