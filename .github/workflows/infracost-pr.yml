@@ -3,7 +3,7 @@ name: Infracost PR Cost Diff
 on:
   pull_request:
     branches:
-      - main
+      - feature/*
     paths:
       - "**.tf"
       - "**.tfvars"
