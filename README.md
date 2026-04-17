@@ -2,7 +2,7 @@
 
 ## What is Infracost?
 
-Infracost reads Terraform HCL and produces cloud cost estimates before any infrastructure is provisioned — no `terraform apply`, no cloud credentials.
+Infracost reads Terraform HCL and produces cloud cost estimates before any infrastructure is provisioned. no `terraform apply` or cloud credentials.
 
 **Key features**
 
