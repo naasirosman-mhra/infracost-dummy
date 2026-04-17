@@ -11,7 +11,7 @@ resource "azurerm_mssql_server" "main" {
 resource "azurerm_mssql_database" "main" {
   name        = "sqldb-infracost-poc-${var.environment}"
   server_id   = azurerm_mssql_server.main.id
-  sku_name    = "S3"
+  sku_name    = "P2"
   max_size_gb = 250
   tags        = local.common_tags
 }

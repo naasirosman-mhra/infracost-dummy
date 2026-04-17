@@ -40,7 +40,7 @@ resource "azurerm_linux_virtual_machine" "main" {
   name                = "vm-infracost-poc-${var.environment}"
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
-  size                = "Standard_D4s_v5"
+  size                = "Standard_D16s_v5"
   admin_username      = "azureuser"
   tags                = local.common_tags
 
@@ -70,7 +70,7 @@ resource "azurerm_managed_disk" "data" {
   resource_group_name  = azurerm_resource_group.main.name
   storage_account_type = "Premium_LRS"
   create_option        = "Empty"
-  disk_size_gb         = 512
+  disk_size_gb         = 2048
   tags                 = local.common_tags
 }
 
@@ -79,4 +79,47 @@ resource "azurerm_virtual_machine_data_disk_attachment" "data" {
   virtual_machine_id = azurerm_linux_virtual_machine.main.id
   lun                = 10
   caching            = "ReadWrite"
+}
+
+# Worker VM — second identical compute node
+
+resource "azurerm_network_interface" "worker" {
+  name                = "nic-vm-worker-${var.environment}"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+  tags                = local.common_tags
+
+  ip_configuration {
+    name                          = "internal"
+    subnet_id                     = azurerm_subnet.main.id
+    private_ip_address_allocation = "Dynamic"
+  }
+}
+
+resource "azurerm_linux_virtual_machine" "worker" {
+  name                = "vm-worker-${var.environment}"
+  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.main.location
+  size                = "Standard_D16s_v5"
+  admin_username      = "azureuser"
+  tags                = local.common_tags
+
+  network_interface_ids = [azurerm_network_interface.worker.id]
+
+  admin_ssh_key {
+    username   = "azureuser"
+    public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC0placeholder== placeholder@example.com"
+  }
+
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Premium_LRS"
+  }
+
+  source_image_reference {
+    publisher = "Canonical"
+    offer     = "0001-com-ubuntu-server-jammy"
+    sku       = "22_04-lts-gen2"
+    version   = "latest"
+  }
 }
