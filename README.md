@@ -57,12 +57,16 @@ Shows the latest cost estimate per branch. For `main`:
   - Storage Accounts: consider using a lifecycle policy for blob storage
   - FinOps tags: 9 resources missing required tags
 
+![Infracost Cloud — Branches tab showing $445/month baseline and 12 failing policies](image.png)
+
 ### Pull requests tab
 Lists all open PRs with their cost impact at a glance:
 
 | PR | Cost change | Governance |
 |----|------------|-----------|
 | Feature/bigger vm #1 | **+$2,322 (+522%)** | 7 issues, 1 cost guardrail |
+
+![Infracost Cloud — Pull requests tab showing +$2,322 cost increase](image-1.png)
 
 ### PR detail view
 Drilling into the PR shows:
@@ -79,6 +83,8 @@ Drilling into the PR shows:
 - +$2,322/month cost increase (+522%) compared to `main`
 
 The PR is shown as **Blocked** in Infracost Cloud, mirroring the failed GitHub Actions check. The PR can be unblocked manually by an approver in Infracost Cloud once reviewed.
+
+![Infracost Cloud — PR detail showing blocked status, failing policies, and guardrail](image-2.png)
 
 ---
 
