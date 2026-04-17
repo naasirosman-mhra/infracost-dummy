@@ -8,14 +8,14 @@ Infracost reads Terraform HCL and produces cloud cost estimates before any infra
 
 | Feature | What it does |
 |---------|-------------|
-| Baseline cost | Auto-generated on every merge to `main` |
+| Baseline cost | Generated with CLI` |
 | Cost diff | PR comment showing `+/-` per resource vs `main` |
 | Guardrails | Blocks PRs that exceed a cost threshold (e.g. +$2,322 > $250 limit) |
 | FinOps policies | Flags best practice violations — Hybrid Benefit, lifecycle policies, geo-redundant backups |
-| Tagging policies | Fails CI if resources are missing required tags (`Owner`, `CostCentre`, `Environment`) |
+| Other policies | Fails CI if resources are missing required tags (`Owner`, `CostCentre`, `Environment`) |
 | PR governance | Each PR scored for policy violations + cost impact before merge |
 
-> Prices are public list prices from the Infracost Cloud Pricing API. EA/CSP rates will differ.
+> Prices are public list prices from the Infracost Cloud Pricing API. Rates will differ. Enterprise more accurate
 
 ---
 
@@ -32,8 +32,8 @@ Infracost reads Terraform HCL and produces cloud cost estimates before any infra
 
 | Workflow | File | Trigger |
 |----------|------|---------|
-| Infracost Baseline | [infracost-baseline.yml](.github/workflows/infracost-baseline.yml) | Push to `main` on `.tf`/`.tfvars` |
-| Infracost PR Cost Diff | [infracost-pr.yml](.github/workflows/infracost-pr.yml) | PR targeting `main` |
+| Infracost Baseline | [infracost-baseline.yml](.github/workflows/infracost-baseline.yml) | Merge to `main` |
+| Infracost PR Cost Diff | [infracost-pr.yml](.github/workflows/infracost-pr.yml) | PR for `feature/` to `main` |
 
 **Baseline** — runs `infracost breakdown`, prints cost table to Actions log, uploads artifact + to Infracost Cloud. This repo's `main` baseline = **$445/month**. [View runs →](https://github.com/naasirosman-mhra/infracost-dummy/actions/workflows/infracost-baseline.yml)
 
