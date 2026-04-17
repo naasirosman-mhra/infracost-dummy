@@ -10,7 +10,7 @@ This POC shows the full workflow on a dummy Azure Terraform project:
 - **Cost diff**: posted as a PR comment showing exactly how much a proposed change will increase or decrease the monthly bill
 - **Guardrails**: block or warn on PRs that exceed a defined cost increase threshold (e.g. cost increased by $2,322 — threshold was $250)
 - **FinOps policies**: enforce cloud best practices such as using Azure Hybrid Benefit for SQL Server, adding lifecycle policies to blob storage, and removing geo-redundant backups in non-production environments
-- **Tagging policies**: fail the workflow if resources are missing required FinOps tags (e.g. `Owner`, `CostCentre`, `Environment`)
+- **Other policies**: fail the workflow if resources are missing required FinOps tags (e.g. `Owner`, `CostCentre`, `Environment`)
 - **PR governance**: each PR is scored for policy violations and cost impact, giving reviewers a clear signal before merging
 
 All prices are public list prices from the Infracost Cloud Pricing API. Organisations with Enterprise Agreement or CSP rates will see different actual charges.
@@ -88,6 +88,8 @@ The PR is shown as **Blocked** in Infracost Cloud, mirroring the failed GitHub A
 | **Infracost Cloud self-hosted** | You, on your own infrastructure | Same as SaaS but data stays in your environment | Paid, enterprise licence |
 
 Both cloud options are paid regardless of who hosts it — the self-hosted option is not a free alternative. Pricing is per unique PR author per month. See [infracost.io/pricing](https://infracost.io/pricing) for current figures.
+
+> **Verdict**: At the scale of most teams, the Cloud tier likely runs into the thousands of pounds/dollars per year and is probably not worth it. The majority of features — guardrails, tagging policies, FinOps best practice checks, and PR comments — can be replicated for free using the Infracost CLI, [Checkov](https://www.checkov.io/) (open source static analysis), and a small `jq` script in the workflow to enforce cost thresholds.
 
 ![alt text](image-3.png)
 
