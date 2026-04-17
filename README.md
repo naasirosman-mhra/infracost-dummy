@@ -91,6 +91,16 @@ Both cloud options are paid regardless of who hosts it — the self-hosted optio
 
 > **Verdict**: At the scale of most teams, the Cloud tier likely runs into the thousands of pounds/dollars per year and is probably not worth it. The majority of features — guardrails, tagging policies, FinOps best practice checks, and PR comments — can be replicated for free using the Infracost CLI, [Checkov](https://www.checkov.io/) (open source static analysis), and a small `jq` script in the workflow to enforce cost thresholds.
 
+| Feature | Infracost Cloud | Free alternative | Effort |
+|---------|----------------|-----------------|--------|
+| Cost breakdown in CI log | Yes | Infracost CLI (`infracost breakdown`) | None — already in this repo |
+| PR cost diff comment | Yes | Infracost CLI (`infracost comment github`) | None — already in this repo |
+| Guardrails (block PR on cost spike) | Yes | Infracost CLI JSON output + `jq` threshold check in workflow | Low — ~5 lines of bash |
+| FinOps policies (Hybrid Benefit, lifecycle, backups) | Yes | [Checkov](https://www.checkov.io/) — has built-in Azure rules | Low — add one workflow step |
+| Tagging policies | Yes | Checkov tag-checking rules or OPA/Conftest | Low — add one workflow step |
+| PR governance dashboard | Yes | No direct equivalent | High — build your own or use GitHub Actions summary |
+| Cross-repo cost visibility | Yes | No direct equivalent | High — would need custom tooling |
+
 ![alt text](image-3.png)
 
 ---
