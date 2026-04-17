@@ -49,32 +49,12 @@ Infracost reads Terraform HCL and produces cloud cost estimates before any infra
 
 ## Infracost Cloud dashboard
 
-Centralised view across all branches and PRs at [app.infracost.io](https://app.infracost.io).
-
 ### Branches tab
 `main` — **$445/month**, 12 failing policies:
-- Database: remove geo-redundant backups in non-production
-- SQL: use Azure Hybrid Benefit
-- Storage: add lifecycle policy to blob storage
-- FinOps tags: 9 resources missing required tags
-
 ![Infracost Cloud — Branches tab showing $445/month baseline and 12 failing policies](image.png)
 
 ### Pull requests tab
-| PR | Cost change | Governance |
-|----|------------|-----------|
-| Feature/bigger vm #1 | **+$2,322 (+522%)** | 7 issues, 1 cost guardrail |
-
 ![Infracost Cloud — Pull requests tab showing +$2,322 cost increase](image-1.png)
-
-### PR detail
-**Failing policies (7):** SQL Hybrid Benefit · geo-redundant backups · 5 missing FinOps tags
-
-**Guardrail (blocking):** cost increased $2,322 — threshold $250
-
-PR = **Blocked**. Can be manually unblocked by an approver in Infracost Cloud.
-
-![Infracost Cloud — PR detail showing blocked status, failing policies, and guardrail](image-2.png)
 
 ---
 
@@ -88,7 +68,7 @@ PR = **Blocked**. Can be manually unblocked by an approver in Infracost Cloud.
 
 Both cloud options are paid — self-hosted is not a free alternative. Pricing = per unique PR author/month. See [infracost.io/pricing](https://infracost.io/pricing).
 
-> **Verdict**: At team scale the Cloud tier runs into thousands per year and is likely not worth it. Most features can be replicated free with the Infracost CLI + [Checkov](https://www.checkov.io/) + a small `jq` threshold script.
+**Verdict**: Not worth it. Most features can be replicated free with the Infracost CLI + [Checkov](https://www.checkov.io/) + a small `jq` threshold script.
 
 | Feature | Free alternative | Effort |
 |---------|-----------------|--------|
