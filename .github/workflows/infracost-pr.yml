@@ -37,8 +37,8 @@ jobs:
       - name: Generate PR diff JSON
         run: infracost diff --path . --compare-to /tmp/infracost-base.json --format json --out-file /tmp/infracost.json
 
-      - name: Print diff table to log
-        run: infracost diff --path . --compare-to /tmp/infracost-base.json --format table
+      - name: Print diff to log
+        run: infracost diff --path . --compare-to /tmp/infracost-base.json --format diff
 
       - name: Upload diff to Infracost Cloud
         run: infracost upload --path /tmp/infracost.json
