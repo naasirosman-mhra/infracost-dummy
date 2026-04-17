@@ -1,0 +1,39 @@
+name: Infracost Baseline
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "**.tf"
+      - "**.tfvars"
+  workflow_dispatch:
+
+jobs:
+  infracost-baseline:
+    name: Generate cost baseline
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Infracost
+        uses: infracost/actions/setup@v3
+        with:
+          api-key: ${{ secrets.INFRACOST_API_KEY }}
+
+      - name: Print cost breakdown table
+        run: infracost breakdown --path . --format table
+
+      - name: Generate baseline JSON
+        run: infracost breakdown --path . --format json --out-file /tmp/infracost-base.json
+
+      - name: Upload to Infracost Cloud
+        run: infracost upload --path /tmp/infracost-base.json
+
+      - name: Save baseline artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: infracost-base
+          path: /tmp/infracost-base.json
