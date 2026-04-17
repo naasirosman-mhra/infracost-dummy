@@ -2,46 +2,95 @@
 
 ## What is Infracost?
 
-Infracost is an open-source tool that reads Terraform HCL and produces a cloud cost estimate before any infrastructure is provisioned. This POC demonstrates the full workflow on a dummy Azure Terraform project: a baseline cost estimate is generated automatically every time Terraform files are merged to `main`, and a cost *diff* comment is posted to every pull request so engineers can see exactly how much a proposed change will increase or decrease the monthly bill — without ever running `terraform apply` or holding Azure credentials. All prices shown are public list prices from the Infracost Cloud Pricing API; organisations with Enterprise Agreement or CSP rates will see different actual charges.
+Infracost is an open-source tool that reads Terraform HCL and produces a cloud cost estimate before any infrastructure is provisioned.
+
+This POC demonstrates the full workflow on a dummy Azure Terraform project:
+
+- **Baseline cost**: generated automatically on every merge to `main`
+- **Cost diff**: posted as a PR comment showing exactly how much a proposed change will increase or decrease the monthly bill
+
+All prices are public list prices from the Infracost Cloud Pricing API. Organisations with Enterprise Agreement or CSP rates will see different actual charges.
 
 ---
 
 ## How it works
 
-1. A GitHub Actions runner checks out the repository.
-2. The `infracost/actions/setup` action installs the Infracost CLI and authenticates it with the Infracost Cloud Pricing API using only the `INFRACOST_API_KEY` secret.
-3. `infracost breakdown` (or `infracost diff`) parses the Terraform HCL files in the runner's workspace — **no Terraform plan, no Azure credentials, no `terraform init` against a real backend**.
-4. The CLI sends resource metadata (SKU names, regions, sizes) to the Infracost Cloud Pricing API and receives monthly price estimates in return.
-5. Results are rendered as a table in the Actions log, uploaded to Infracost Cloud for the dashboard, and (on PRs) posted as a comment on the pull request.
+1. `infracost/actions/setup` installs the Infracost CLI and authenticates it using only the `INFRACOST_API_KEY` secret.
+2. `infracost breakdown` (or `infracost diff`) parses Terraform HCL in the runner's workspace — **no Terraform plan, no Azure credentials, no `terraform init` against a real backend**.
+3. The CLI sends resource metadata (SKU names, regions, sizes) to the Infracost Cloud Pricing API and receives monthly price estimates.
+4. Results are rendered in the Actions log, uploaded to Infracost Cloud, and (on PRs) posted as a PR comment.
 
 ---
 
-## Demo script
+## GitHub Actions workflows
 
-### 1 — Watch the baseline workflow on `main`
-- The push to `main` triggers **Infracost Baseline** (`.github/workflows/infracost-baseline.yml`).
-- Open **Actions → Infracost Baseline → latest run** and expand the *Print cost breakdown table* step to see the full monthly cost table.
-- The run is also uploaded to **Infracost Cloud** — open [app.infracost.io](https://app.infracost.io) to see the dashboard for this repo.
+| Workflow | File | Trigger |
+|----------|------|---------|
+| Infracost Baseline | [infracost-baseline.yml](.github/workflows/infracost-baseline.yml) | Push to `main` on `.tf`/`.tfvars` files |
+| Infracost PR Cost Diff | [infracost-pr.yml](.github/workflows/infracost-pr.yml) | Pull request targeting `main` |
 
-### 2 — Open a PR from `feature/bigger-vm` → `main`
-- The PR contains: VM upsized D4s_v5 → D16s_v5, managed disk grown 512 GB → 2,048 GB, a second D16s_v5 worker VM added, and the SQL database upgraded S3 → P2.
+### Baseline workflow log
+When code merges to `main`, the [baseline workflow](https://github.com/naasirosman-mhra/infracost-dummy/actions/workflows/infracost-baseline.yml) runs `infracost breakdown` and prints a full cost table to the Actions log. The JSON output is uploaded as a workflow artifact and to Infracost Cloud. For this repo, the `main` baseline is **$445/month**.
 
-### 3 — View the Infracost PR comment
-- The **Infracost PR Cost Diff** workflow (`.github/workflows/infracost-pr.yml`) runs automatically.
-- Within ~60 seconds a comment appears on the PR showing the baseline vs new monthly cost and a `+` / `-` diff per resource line.
-- The diff is also visible in Infracost Cloud under the PR's entry.
+### PR workflow log
+When a PR is opened, the [PR workflow](https://github.com/naasirosman-mhra/infracost-dummy/actions/workflows/infracost-pr.yml) runs these steps:
+1. Checks out the base branch (`main`) into a git worktree at `/tmp/base`
+2. Generates a baseline JSON from `main`: `infracost breakdown --path /tmp/base`
+3. Generates a diff JSON from the PR branch: `infracost diff --path . --compare-to /tmp/infracost-base.json`
+4. Posts the diff as a comment on the PR and uploads to Infracost Cloud
+5. **Fails the CI check** if any Infracost Cloud guardrails or policies are violated
+
+For the `feature/bigger-vm` PR the log shows: cost increased by **+$2,322/month (+522%)**, which exceeded the $250 guardrail threshold — causing the workflow to exit with code 1 and the PR to be marked **Blocked**.
+
+---
+
+## Infracost Cloud dashboard
+
+Infracost Cloud at [app.infracost.io](https://app.infracost.io) provides a centralised view across all branches and PRs.
+
+### Branches tab
+Shows the latest cost estimate per branch. For `main`:
+- **$445/month** baseline cost
+- **12 failing policies** detected on the baseline infrastructure, including:
+  - Database: consider removing geo-redundant backups in non-production projects
+  - SQL: consider using Azure Hybrid Benefit for SQL Server
+  - Storage Accounts: consider using a lifecycle policy for blob storage
+  - FinOps tags: 9 resources missing required tags
+
+### Pull requests tab
+Lists all open PRs with their cost impact at a glance:
+
+| PR | Cost change | Governance |
+|----|------------|-----------|
+| Feature/bigger vm #1 | **+$2,322 (+522%)** | 7 issues, 1 cost guardrail |
+
+### PR detail view
+Drilling into the PR shows:
+
+**Failing policies (7 issues)**
+- SQL — consider using Azure Hybrid Benefit for SQL Server
+- Database — consider removing geo-redundant backups in non-production projects
+- FinOps tags — 5 resources missing required tags
+
+**Guardrails**
+- Significant cost increase: please review *(blocking)* — cost increased by $2,322, threshold was $250
+
+**Cost estimate**
+- +$2,322/month cost increase (+522%) compared to `main`
+
+The PR is shown as **Blocked** in Infracost Cloud, mirroring the failed GitHub Actions check. The PR can be unblocked manually by an approver in Infracost Cloud once reviewed.
 
 ---
 
 ## Pricing
 
-The **Infracost CLI**, **GitHub Action**, and **self-hosted** use are free and open source (MIT licence). **Infracost Cloud** — the SaaS dashboard, team policies, PR comments at scale, and budget guardrails — is a paid product priced per seat, based on unique PR authors per month. Current pricing is published at [infracost.io/pricing](https://infracost.io/pricing); do not rely on any figures in this document as they may have changed.
+The **Infracost CLI**, **GitHub Action**, and self-hosted use are free and open source (MIT licence). **Infracost Cloud** — the SaaS dashboard, team policies, PR comments at scale, and budget guardrails — is a paid product priced per seat based on unique PR authors per month. See [infracost.io/pricing](https://infracost.io/pricing) for current figures.
 
 ---
 
 ## Next steps
 
-- **Enable Infracost Cloud features**: connect the repo in the Infracost Cloud dashboard to unlock org-wide cost visibility, pull-request history, and trend charts.
-- **Add tagging policies**: configure Infracost to fail the workflow if resources are missing required tags (e.g. `Owner`, `CostCentre`).
-- **Set budget guardrails**: use `infracost comment` with `--threshold` flags or Infracost Cloud policies to block merges that exceed a defined cost increase percentage.
-- **Gate PRs on cost thresholds**: integrate `infracost diff` exit codes into branch protection rules so that PRs with a cost increase above a set limit require manual approval.
+- **Enable Infracost Cloud features**: connect the repo in the dashboard to unlock org-wide cost visibility and trend charts.
+- **Add tagging policies**: fail the workflow if resources are missing required tags (e.g. `Owner`, `CostCentre`).
+- **Set budget guardrails**: block merges that exceed a defined cost increase percentage.
+- **Gate PRs on cost thresholds**: use `infracost diff` exit codes in branch protection rules so large cost increases require manual approval.
