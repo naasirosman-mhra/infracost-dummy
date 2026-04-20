@@ -70,15 +70,6 @@ Both cloud options are paid — self-hosted is not a free alternative. Pricing =
 
 **Verdict**: Not worth it. Most features can be replicated free with the Infracost CLI + [Checkov](https://www.checkov.io/) + a small `jq` threshold script.
 
-| Feature | Free alternative | Effort |
-|---------|-----------------|--------|
-| Cost breakdown in CI | Infracost CLI — `infracost breakdown` | None — already in this repo |
-| PR cost diff comment | Infracost CLI — `infracost comment github` | None — already in this repo |
-| Guardrails | CLI JSON output + `jq` threshold check | Low — ~5 lines of bash |
-| FinOps policies | Checkov — built-in Azure rules | Low — one workflow step |
-| Tagging policies | Checkov or OPA/Conftest | Low — one workflow step |
-| PR governance dashboard | No direct equivalent | High |
-| Cross-repo cost visibility | No direct equivalent | High |
 
 ![alt text](image-3.png)
 
